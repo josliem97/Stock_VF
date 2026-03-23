@@ -32,7 +32,7 @@ export function SuperAdminClient({ initialTenants, initialCars }: { initialTenan
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 md:p-6 shadow-xl">
              <h2 className="text-lg font-bold text-white mb-4">Register New Dealership (Tenant)</h2>
-             <form action={createTenant} className="flex flex-col sm:flex-row gap-4 items-end">
+             <form action={async (formData) => { await createTenant(formData) }} className="flex flex-col sm:flex-row gap-4 items-end">
                <div className="flex-1 w-full">
                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dealership Name</label>
                  <input name="name" required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-fuchsia-500" placeholder="VinFast..." />
@@ -71,10 +71,10 @@ export function SuperAdminClient({ initialTenants, initialCars }: { initialTenan
                         {t.expiry_date ? new Date(t.expiry_date).toLocaleDateString('vi-VN') : 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-right flex justify-end gap-2">
-                        <button onClick={() => extendTenantExpiry(t.id, 30)} className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded transition-colors border border-emerald-500/20">
+                        <button onClick={() => { extendTenantExpiry(t.id, 30); }} className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded transition-colors border border-emerald-500/20">
                           +30 Days
                         </button>
-                        <button onClick={() => extendTenantExpiry(t.id, 365)} className="px-3 py-1.5 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-400 text-xs font-semibold rounded transition-colors border border-fuchsia-500/20">
+                        <button onClick={() => { extendTenantExpiry(t.id, 365); }} className="px-3 py-1.5 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-400 text-xs font-semibold rounded transition-colors border border-fuchsia-500/20">
                           +1 Year
                         </button>
                       </td>
@@ -91,7 +91,7 @@ export function SuperAdminClient({ initialTenants, initialCars }: { initialTenan
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 md:p-6 shadow-xl">
              <h2 className="text-lg font-bold text-white mb-4">Add Global Master Car</h2>
-             <form action={addMasterCar} className="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
+             <form action={async (formData) => { await addMasterCar(formData) }} className="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
                <div className="col-span-2 md:col-span-1">
                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Model</label>
                  <input name="car_type" required placeholder="VF 8" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500" />
@@ -132,7 +132,7 @@ export function SuperAdminClient({ initialTenants, initialCars }: { initialTenan
                         <span className="px-2 py-1 bg-slate-800/50 rounded border border-slate-700/50">Nội: {car.interior_color}</span>
                       </div>
                    </div>
-                   <button onClick={() => deleteMasterCar(car.id)} className="mt-4 w-full py-1.5 text-xs font-semibold text-red-500 hover:text-white hover:bg-red-500 border border-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
+                   <button type="button" onClick={() => { deleteMasterCar(car.id); }} className="mt-4 w-full py-1.5 text-xs font-semibold text-red-500 hover:text-white hover:bg-red-500 border border-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
                      Xóa
                    </button>
                 </div>
