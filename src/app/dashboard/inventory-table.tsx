@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { updateInventoryStock } from './actions'
 
 type InventoryItem = {
@@ -22,10 +22,24 @@ type InventoryItem = {
 export function InventoryTable({ initialData }: { initialData: InventoryItem[] }) {
   const [data, setData] = useState(initialData)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [filterType, setFilterType] = useState('All')
+  const [filterColor, setFilterColor] = useState('All')
 
   useEffect(() => {
     setData(initialData)
   }, [initialData])
+
+  // Unique lists for filters
+  const carTypes = useMemo(() => Array.from(new Set(initialData.map(item => item.master_cars.car_type))), [initialData])
+  const colors = useMemo(() => Array.from(new Set(initialData.map(item => item.master_cars.exterior_color))), [initialData])
+
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      if (filterType !== 'All' && item.master_cars.car_type !== filterType) return false
+      if (filterColor !== 'All' && item.master_cars.exterior_color !== filterColor) return false
+      return true
+    })
+  }, [data, filterType, filterColor])
 
   const handleUpdate = async (id: string, field: string, value: string) => {
     const numValue = parseInt(value, 10);
@@ -41,7 +55,7 @@ export function InventoryTable({ initialData }: { initialData: InventoryItem[] }
     setUpdating(null);
   }
 
-  if (data.length === 0) {
+  if (initialData.length === 0) {
     return (
       <div className="p-16 text-center flex flex-col items-center justify-center">
         <div className="w-16 h-16 mb-4 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700/50">
@@ -54,7 +68,44 @@ export function InventoryTable({ initialData }: { initialData: InventoryItem[] }
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="flex flex-col">
+      <div className="p-4 md:p-6 border-b border-slate-800/80 bg-slate-900/30 flex flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Loại xe</div>
+          <select 
+            value={filterType} 
+            onChange={e => setFilterType(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="All">Tất cả</option>
+            {carTypes.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Màu sắc</div>
+          <select 
+            value={filterColor} 
+            onChange={e => setFilterColor(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            <option value="All">Tất cả</option>
+            {colors.map(color => <option key={color} value={color}>{color}</option>)}
+          </select>
+        </div>
+        {(filterType !== 'All' || filterColor !== 'All') && (
+           <button 
+             onClick={() => { setFilterType('All'); setFilterColor('All'); }}
+             className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest underline underline-offset-4"
+           >
+             Xoá lọc
+           </button>
+        )}
+        <div className="ml-auto text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+           Hiển thị: {filteredData.length} / {data.length}
+        </div>
+      </div>
+      
+      <div className="overflow-x-auto">
       <table className="w-full text-left text-sm whitespace-nowrap">
         <thead className="bg-slate-900 border-b border-slate-700/50 uppercase text-[10px] font-bold tracking-wider">
           <tr>
@@ -68,7 +119,7 @@ export function InventoryTable({ initialData }: { initialData: InventoryItem[] }
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800/50">
-          {data.map((row) => {
+          {filteredData.map((row) => {
             const saleableStock = (row.beginning_stock + row.in_transit) - (row.pending_delivery + row.continuous_contract);
             
             return (
@@ -126,8 +177,16 @@ export function InventoryTable({ initialData }: { initialData: InventoryItem[] }
               </tr>
             )
           })}
+          {filteredData.length === 0 && (
+             <tr>
+               <td colSpan={7} className="px-6 py-20 text-center">
+                 <p className="text-slate-500 font-bold italic uppercase tracking-widest text-xs">Không tìm thấy xe nào phù hợp với bộ lọc</p>
+               </td>
+             </tr>
+          )}
         </tbody>
       </table>
     </div>
+  </div>
   )
 }
